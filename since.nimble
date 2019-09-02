@@ -18,7 +18,7 @@ task setupremote, "set up dokku remote":
 task test, "run tests":
   echo "running tests..."
   withDir "src/sincePkg":
-    let testFiles = @["pathing", "redisurl"]
+    let testFiles = @["battlesnake", "pathing", "redissave", "redisurl"]
 
     for tf in testFiles:
       echo "testing " & tf

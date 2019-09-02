@@ -1,79 +1,12 @@
 import astar, hashes, logging, random, strformat
-
-type
-  Game* = object
-    id*: string
-  CoordinatePair* = object
-    x*: int
-    y*: int
-  Path* = seq[CoordinatePair]
-  Snake* = object
-    id*: string
-    name*: string
-    health*: int
-    body*: seq[CoordinatePair]
-  Board* = object
-    height*: int
-    width*: int
-    food*: seq[CoordinatePair]
-    snakes*: seq[Snake]
-  State* = object
-    game*: Game
-    turn*: int
-    board*: Board
-    you*: Snake
+import battlesnake
+export battlesnake
 
 const
   good* = 1
   enemyThere* = 999
   selfThere* = 9999
   potentialEnemyMovement* = 50
-
-proc newCP*(x, y: int): CoordinatePair =
-  CoordinatePair(
-    x: x,
-    y: y,
-  )
-
-func `==`*(a, b: CoordinatePair): bool =
-  a.x == b.x and a.y == b.y
-
-func `!=`* (a, b: CoordinatePair): bool =
-  not (a == b)
-
-func `$`*(p: CoordinatePair): string =
-  fmt"({p.x}, {p.y})"
-
-func hash*(p: CoordinatePair): Hash =
-  var h: Hash = 0
-  h = h !& hash(p.x)
-  h = h !& hash(p.y)
-  result = !$h
-
-func `->`*(l, r: CoordinatePair): string =
-  if l.x < r.x:
-    return "right"
-  if l.x > r.x:
-    return "left"
-  if l.y > r.y:
-    return "up"
-  if l.y < r.y:
-    return "down"
-
-  assert(false)
-
-func head*(s: Snake): CoordinatePair =
-  s.body[0]
-
-func tail*(s: Snake): CoordinatePair =
-  s.body[s.body.len - 1]
-
-template yieldIfExists(b: Board, p: CoordinatePair) =
-  let exists =
-    p.x >= 0 and p.x < b.width and
-    p.y >= 0 and p.y < b.height
-  if exists:
-    yield p
 
 iterator neighbors*(b: Board, p: CoordinatePair): CoordinatePair =
   b.yieldIfExists newCP(p.x - 1, p.y)
@@ -131,7 +64,7 @@ proc findFood(s: State): CoordinatePair =
 randomize()
 proc randomSafeTile(b: Board): CoordinatePair =
   result = newCP(rand(b.width), rand(b.height))
-  if b.isDeadly(result):
+  if b.isDeadly(result) or b.isEdge(result):
     result = b.randomSafeTile
 
 proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
@@ -181,30 +114,6 @@ when isMainModule:
   import json, logging, os, unittest
   #newConsoleLogger().addHandler
 
-  suite "coordinates":
-    test "equality":
-      assert newCP(1, 1) == newCP(1, 1)
-    test "toString":
-      assert $newCP(1, 1) == "(1, 1)"
-    test "directionality":
-      type Case = tuple[a, b: CoordinatePair, s: string]
-      let pairs: seq[Case] = @[
-        (newCP(1, 1), newCP(2, 1), "right"),
-        (newCP(1, 1), newCP(0, 1), "left"),
-        (newCP(1, 1), newCP(1, 0), "up"),
-        (newCP(1, 1), newCP(1, 2), "down")
-      ]
-
-      var failed = false
-
-      for p in pairs:
-        let intermediate = p.a -> p.b
-        if intermediate != p.s:
-          echo fmt"wanted: {p.a} -> {p.b} == {p.s}, got: {intermediate}"
-          failed = true
-
-      assert not failed
-
   const
     findFoodData = slurp "./testdata/state_findfood.json"
     findTargetData = slurp "./testdata/state_findtarget.json"
@@ -240,9 +149,9 @@ when isMainModule:
 
       for _ in 1..100:
         let rp = b.randomSafeTile
-
-        for dp in deadlyPoints:
-          check(rp != dp)
+        check:
+          not b.isDeadly(rp)
+          not b.isEdge(rp)
 
   suite "targetFinding":
     template checkTargetIsntDeadly() =
@@ -251,9 +160,6 @@ when isMainModule:
           not (target in snk.body)
           target != newCP(0, 0)
           target != newCP(-1, -1)
-
-    template runTest(s: State) =
-      discard
 
     test "findFood":
       let
