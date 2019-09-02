@@ -50,9 +50,9 @@ func `->`*(l, r: CoordinatePair): string =
     return "right"
   if l.x > r.x:
     return "left"
-  if l.y < r.y:
-    return "up"
   if l.y > r.y:
+    return "up"
+  if l.y < r.y:
     return "down"
 
   assert(false)
@@ -121,8 +121,8 @@ when isMainModule:
       let pairs: seq[Case] = @[
         (newCP(1, 1), newCP(2, 1), "right"),
         (newCP(1, 1), newCP(0, 1), "left"),
-        (newCP(1, 1), newCP(1, 2), "up"),
-        (newCP(1, 1), newCP(1, 0), "down")
+        (newCP(1, 1), newCP(1, 0), "up"),
+        (newCP(1, 1), newCP(1, 2), "down")
       ]
 
       var failed = false
