@@ -16,11 +16,11 @@ proc init*(url: string) {.async.} =
 
   asyncCheck pingRedis()
 
-func createKey(s: State): string =
-  createKey(s.game.id, $s.turn)
-
-func createKey(gameId, turn: string): string =
+proc createKey(gameId, turn: string): string =
   fmt"{gameId}:{turn}"
+
+proc createKey(s: State): string =
+  createKey(s.game.id, $s.turn)
 
 proc saveTurn*(s: State, target: CoordinatePair, myMove: string) {.async.} =
   let toWrite = %* {
@@ -31,6 +31,6 @@ proc saveTurn*(s: State, target: CoordinatePair, myMove: string) {.async.} =
 
   await redisClient.setk(s.createKey, $toWrite)
 
-proc getData*(gameId, turn: string): JsonNode {.async.}
-  let data = await redisClient.get(createKey gameId, turn)
+proc getData*(gameId, turn: string): Future[JsonNode] {.async.} =
+  let data = await redisClient.get(createKey(gameId, turn))
   result = data.parseJson

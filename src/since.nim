@@ -70,4 +70,4 @@ routes:
     resp "OK"
 
   get "/inspect/@gameId/@turn":
-    resp Http200, $getData(@"gameId", @"turn"), "application/json"
+    resp Http200, $await getData(@"gameId", @"turn"), "application/json"
