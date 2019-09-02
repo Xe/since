@@ -33,8 +33,9 @@ proc createKey(s: State): string =
   createKey(s.game.id, $s.turn)
 
 proc compareKey(a, b: string): int =
-  aSp = a.split(":")
-  bSp = b.split(":")
+  let
+    aSp = a.split(":")
+    bSp = b.split(":")
 
   return cmp[int](aSp[1].parseInt, bSp[1].parseInt)
 
