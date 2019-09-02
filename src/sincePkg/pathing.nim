@@ -9,11 +9,15 @@ const
   potentialEnemyMovement* = 50
   dangerousPlace* = 100
 
-iterator neighbors*(b: State, p: CoordinatePair): CoordinatePair =
+iterator allNeighbors(b: State, p: CoordinatePair): CoordinatePair =
   b.yieldIfExists newCP(p.x - 1, p.y)
   b.yieldIfExists newCP(p.x + 1, p.y)
   b.yieldIfExists newCP(p.x, p.y - 1)
   b.yieldIfExists newCP(p.x, p.y + 1)
+
+iterator neighbors*(s: State, p: CoordinatePair): CoordinatePair =
+  for node in s.allNeighbors(p):
+    s.yieldIfExistsAndSafe p
 
 proc cost*(st: State, a, b: CoordinatePair): float =
   for s in st.board.snakes:
@@ -22,7 +26,7 @@ proc cost*(st: State, a, b: CoordinatePair): float =
         return enemyThere
       if s.id == st.you.id:
         continue
-      for ne in st.neighbors(cp):
+      for ne in st.allNeighbors(cp):
         if b == ne:
           return potentialEnemyMovement
 
@@ -37,7 +41,7 @@ proc isDeadly*(b: Board, p: CoordinatePair): bool =
   return false
 
 proc isDangerous*(s: State, p: CoordinatePair): bool =
-  for loc in s.neighbors p:
+  for loc in s.allNeighbors p:
     for sn in s.board.snakes:
       if loc == sn.head:
         return true
@@ -84,8 +88,7 @@ proc randomSafeTile(b: Board): CoordinatePair =
 
 proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
   for ne in s.neighbors(p):
-    if not s.board.isDeadly(ne):
-      return ne
+    return ne
 
 proc findTail(s: State): CoordinatePair =
   s.findSafeNeighbor(s.you.tail)

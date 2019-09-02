@@ -69,6 +69,13 @@ template yieldIfExists*(s: State, p: CoordinatePair) =
   if exists:
     yield p
 
+template yieldIfExistsAndSafe*(s: State, p: CoordinatePair) =
+  let exists =
+    p.x >= 0 and p.x < s.board.width and
+    p.y >= 0 and p.y < s.board.height
+  if exists and not s.board.isDeadly(p):
+    yield p
+
 proc view*(s: State, p: Path): string =
   var grid = newSeq[seq[string]](s.board.height)
   for i in 0 .. < s.board.height:

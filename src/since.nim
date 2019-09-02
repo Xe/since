@@ -35,48 +35,58 @@ routes:
     resp Http200, $ret, "application/json"
 
   post "/move":
-    let
-      state = request.body.parseJson.to(State)
-    var
-      lastInfo: GameData
-      target: CoordinatePair
-      desc: string
+    try:
+      let
+        state = request.body.parseJson.to(State)
+      var
+        lastInfo: GameData
+        target: CoordinatePair
+        desc: string
 
-    if state.turn != 1:
-      lastInfo = (await getData(state.game.id, $(state.turn-1))).to(GameData)
-      target = lastInfo.target
-      desc = lastInfo.desc
-    else:
-      let interm = state.findTarget
-      target = interm.cp
-      desc = interm.state
+      if state.turn != 1:
+        lastInfo = (await getData(state.game.id, $(state.turn-1))).to(GameData)
+        target = lastInfo.target
+        desc = lastInfo.desc
+      else:
+        let interm = state.findTarget
+        target = interm.cp
+        desc = interm.state
 
-    let source = state.you.head
+      let source = state.you.head
 
-    if source == target or state.board.isDeadly(target):
-      let interm = state.findTarget
-      target = interm.cp
-      desc = interm.state
+      if source == target or state.board.isDeadly(target):
+        let interm = state.findTarget
+        target = interm.cp
+        desc = interm.state
 
-    let myPath = state.findPath(source, target)
-    var
-      myMove: string
+      let myPath = state.findPath(source, target)
+      var
+        myMove: string
 
-    if myPath.len >= 2:
-      myMove = source -> myPath[1]
-    else:
-      debug fmt"can't find a path?"
-      myMove = sample ["up", "left", "right", "down"]
+      if myPath.len >= 2:
+        myMove = source -> myPath[1]
+      else:
+        debug fmt"can't find a path?"
+        myMove = sample ["up", "left", "right", "down"]
 
-    info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
-    debug fmt"path: {myPath}"
-    asyncCheck saveTurn(state, target, myMove, myPath, desc)
+      info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
+      debug fmt"path: {myPath}"
+      asyncCheck saveTurn(state, target, myMove, myPath, desc)
 
-    let ret = %* {
-      "move": myMove
-    }
+      let ret = %* {
+        "move": myMove
+      }
 
-    resp Http200, $ret, "application/json"
+      resp Http200, $ret, "application/json"
+    except:
+      info fmt"{getCurrentException()}: {getCurrentExceptionMsg()}"
+      info "random move"
+
+      let ret = %* {
+        "move": sample ["up", "left", "right", "down"]
+      }
+
+      resp Http200, $ret, "application/json"
 
   post "/end":
     let
