@@ -133,21 +133,33 @@ proc randomSafeTile(b: Board): CoordinatePair =
   if b.isDeadly(result):
     result = b.randomSafeTile
 
-proc findTail(s: State): CoordinatePair =
-  for ne in s.board.neighbors(s.you.tail):
+proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
+  for ne in s.board.neighbors(p):
     if not s.board.isDeadly(ne):
       return ne
 
+proc findTail(s: State): CoordinatePair =
+  s.findSafeNeighbor(s.you.tail)
+
 proc findTarget*(s: State): CoordinatePair =
   result = newCP(-1, -1)
-  var biggestLen = 0
+  var
+    totalLen = 0
+    biggestLen = 0
   for snake in s.board.snakes:
+    totalLen += snake.body.len
     if snake.body.len > biggestLen:
       biggestLen = snake.body.len
+  let avgLen: float = totalLen / s.board.snakes.len
   if s.board.food.len >= 1:
     if s.you.health <= 30 or s.you.body.len <= biggestLen:
       debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
       result = findFood(s)
+  if s.you.body.len.float > avgLen:
+    debug fmt"hunting (myLen: {s.you.body.len}, avgLen: {avgLen})"
+    for snake in s.board.snakes:
+      if snake.body.len < s.you.body.len:
+        result = s.findSafeNeighbor(snake.head)
   else:
     debug "chasing tail"
     result = s.findTail
