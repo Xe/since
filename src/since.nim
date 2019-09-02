@@ -51,7 +51,7 @@ routes:
 
     info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
     debug fmt"path: {myPath}"
-    asyncCheck saveTurn(state, target, myMove)
+    asyncCheck saveTurn(state, target, myMove, myPath)
 
     let ret = %* {
       "move": myMove

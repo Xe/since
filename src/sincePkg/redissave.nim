@@ -22,10 +22,11 @@ proc createKey(gameId, turn: string): string =
 proc createKey(s: State): string =
   createKey(s.game.id, $s.turn)
 
-proc saveTurn*(s: State, target: CoordinatePair, myMove: string) {.async.} =
+proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: seq[CoordinatePair]) {.async.} =
   let toWrite = %* {
     "state": s,
     "target": target,
+    "path": path,
     "myMove": myMove
   }
 

@@ -81,6 +81,9 @@ proc cost*(brd: Board, a, b: CoordinatePair): float =
     for cp in s.body:
       if b == cp:
         return enemyThere
+      for ne in brd.neighbors(cp):
+        if b == ne:
+          return potentialEnemyMovement
 
   return good
 
