@@ -11,7 +11,7 @@ const
 
 iterator neighbors*(s: State, p: CoordinatePair): CoordinatePair =
   for node in s.allNeighbors(p):
-    s.yieldIfExistsAndSafe p
+    s.yieldIfExistsAndSafe node
 
 proc cost*(st: State, a, b: CoordinatePair): float =
   for s in st.board.snakes:
