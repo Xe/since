@@ -2,11 +2,7 @@ import astar, asyncdispatch, dotenv,
        jester, json, logging, os, random,
        redis, strformat, strutils
 
-import sincePkg/[pathing, redissave]
-
-try: initDotEnv().overload
-except: discard
-newConsoleLogger().addHandler
+import sincePkg/[base, pathing, redissave]
 
 waitFor redissave.init getEnv "REDIS_URL"
 info "redis client initialized"
