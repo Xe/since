@@ -69,3 +69,5 @@ routes:
 
     resp "OK"
 
+  get "/inspect/@gameId/@turn":
+    resp Http200, $getData(@"gameId", @"turn"), "application/json"
