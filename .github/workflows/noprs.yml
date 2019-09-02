@@ -1,0 +1,11 @@
+name: reject pull requests
+on: [pull_request]
+jobs:
+  closepr:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Auto Close
+      uses: superbrothers/auto-close-action@v0.0.1
+      env:
+        COMMENT: "Sorry, this repo doesn't accept pull requests"
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
