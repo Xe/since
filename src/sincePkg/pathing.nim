@@ -19,6 +19,8 @@ proc cost*(st: State, a, b: CoordinatePair): float =
     for cp in s.body:
       if b == cp:
         return enemyThere
+      if s.id == st.you.id:
+        continue
       for ne in st.neighbors(cp):
         if b == ne:
           return potentialEnemyMovement
