@@ -8,6 +8,9 @@ type GameData* = object
   path*: Path
   desc*: string
 
+proc cmp*(a, b: GameData): int =
+  return cmp[int](a.state.turn, b.state.turn)
+
 var redisClient: AsyncRedis
 
 proc init*(url: string) {.async.} =
@@ -43,7 +46,8 @@ proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, des
 proc getGame*(gameId: string): Future[JsonNode] {.async.} =
   result = newJArray()
 
-  let keys = await redisClient.keys(fmt"{gameId}:*")
+  var keys = await redisClient.keys(fmt"{gameId}:*")
+  keys.sort
   for key in keys:
     let data = await redisClient.get(key)
     result.add data.parseJson
