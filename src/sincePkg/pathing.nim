@@ -112,7 +112,7 @@ proc findFood(s: State): CoordinatePair =
 
 proc findTarget*(s: State): CoordinatePair =
   var biggestLen = 0
-  for snake in board.snakes:
+  for snake in s.board.snakes:
     if snake.body.len > biggestLen:
       biggestLen = snake.body.len
   if s.you.health <= 30 or s.you.body.len <= biggestLen:
@@ -120,10 +120,10 @@ proc findTarget*(s: State): CoordinatePair =
     return findFood(s)
   debug "chasing tail"
   result = s.you.tail
-  for snake in board.snakes:
+  for snake in s.board.snakes:
     if s.you.id == snake.id:
       continue
-    for next in neighbors(b, snake.head):
+    for next in neighbors(s.board, snake.head):
       if result == next:
         return findFood(s)
 
