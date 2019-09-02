@@ -12,6 +12,9 @@ bin           = @["since"]
 
 requires "nim >= 0.20.2", "jester", "redis", "astar#head", "dotenv"
 
+task setupremote, "set up dokku remote":
+  exec "git remote add dokku dokku@minipaas.xeserv.us:since"
+
 task test, "run tests":
   echo "running tests..."
   withDir "src/sincePkg":
