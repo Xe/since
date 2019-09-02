@@ -59,7 +59,12 @@ routes:
         target = interm.cp
         desc = interm.state
 
-      let myPath = state.findPath(source, target)
+      var myPath = state.findPath(source, target)
+      if myPath.len == 0:
+        let interm = state.findTarget
+        target = interm.cp
+        desc = interm.state
+        myPath = state.findPath(source, target)
       var
         myMove: string
 
