@@ -9,12 +9,6 @@ const
   potentialEnemyMovement* = 50
   dangerousPlace* = 100
 
-iterator allNeighbors(b: State, p: CoordinatePair): CoordinatePair =
-  b.yieldIfExists newCP(p.x - 1, p.y)
-  b.yieldIfExists newCP(p.x + 1, p.y)
-  b.yieldIfExists newCP(p.x, p.y - 1)
-  b.yieldIfExists newCP(p.x, p.y + 1)
-
 iterator neighbors*(s: State, p: CoordinatePair): CoordinatePair =
   for node in s.allNeighbors(p):
     s.yieldIfExistsAndSafe p
@@ -119,8 +113,6 @@ when isMainModule:
   #newConsoleLogger().addHandler
 
   const
-    findFoodData = slurp "./testdata/state_findfood.json"
-    findTargetData = slurp "./testdata/state_findtarget.json"
     preventSelfKill = slurp "./testdata/state_prevent_self_kill.json"
 
   suite "board":
@@ -157,48 +149,7 @@ when isMainModule:
           not b.isDeadly(rp)
           not b.isEdge(rp)
 
-  suite "targetFinding":
-    template checkTargetIsntDeadly() =
-      for snk in s.board.snakes:
-        check:
-          not (target in snk.body)
-          target != newCP(0, 0)
-          target != newCP(-1, -1)
-
-    test "findFood":
-      let
-        ss = findFoodData.parseJson.to(seq[State])
-      for s in ss:
-        let
-          target = s.findFood
-        check target in s.board.food
-        checkTargetIsntDeadly()
-
-    test "findTail":
-      let
-        s = findTargetData.parseJson.to(State)
-        target = s.findTail
-      checkTargetIsntDeadly()
-
-    test "findTarget":
-      let
-        s = findTargetData.parseJson.to(State)
-        target = s.findTarget.cp
-      checkTargetIsntDeadly()
-
   suite "findPath":
-    test "findFood":
-      let ss = findFoodData.parseJson.to(seq[State])
-      for s in ss:
-        let
-          source = s.you.head
-          target = s.findTarget
-          myPath = s.findPath(source, target.cp)
-        debug fmt"{target} -> {myPath}"
-        check:
-          myPath.len >= 2
-          not (s.board.isDeadly myPath[1])
-
     test "dontKillSelf":
       let ss = preventSelfKill.parseJson.to(seq[State])
       for s in ss:

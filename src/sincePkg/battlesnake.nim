@@ -62,6 +62,26 @@ func head*(s: Snake): CoordinatePair =
 func tail*(s: Snake): CoordinatePair =
   s.body[s.body.len - 1]
 
+template yieldIfExists*(s: State, p: CoordinatePair) =
+  let exists =
+    p.x >= 0 and p.x < s.board.width and
+    p.y >= 0 and p.y < s.board.height
+  if exists:
+    yield p
+
+template yieldIfExistsAndSafe*(s: State, p: CoordinatePair) =
+  let exists =
+    p.x >= 0 and p.x < s.board.width and
+  p.y >= 0 and p.y < s.board.height
+  if exists and not s.board.isDeadly(p):
+    yield p
+
+iterator allNeighbors*(b: State, p: CoordinatePair): CoordinatePair =
+  b.yieldIfExists newCP(p.x - 1, p.y)
+  b.yieldIfExists newCP(p.x + 1, p.y)
+  b.yieldIfExists newCP(p.x, p.y - 1)
+  b.yieldIfExists newCP(p.x, p.y + 1)
+
 proc isDeadly*(b: Board, p: CoordinatePair): bool =
   for enemy in b.snakes:
     for seg in enemy.body:
@@ -76,50 +96,7 @@ proc isDangerous*(s: State, p: CoordinatePair): bool =
       if loc == sn.head:
         return true
 
-      false
-
-template yieldIfExists*(s: State, p: CoordinatePair) =
-  let exists =
-    p.x >= 0 and p.x < s.board.width and
-    p.y >= 0 and p.y < s.board.height
-  if exists:
-    yield p
-
-template yieldIfExistsAndSafe*(s: State, p: CoordinatePair) =
-  let exists =
-    p.x >= 0 and p.x < s.board.width and
-    p.y >= 0 and p.y < s.board.height
-  if exists and not s.board.isDeadly(p):
-    yield p
-
-proc view*(s: State, p: Path): string =
-  var grid = newSeq[seq[string]](s.board.height)
-  for i in 0 .. < s.board.height:
-    grid[i] = newSeq[string](s.board.width)
-
-  for elem in p:
-    grid[elem.y][elem.x] = "p"
-
-  for sn in s.board.snakes:
-    for seg in sn.body:
-      grid[seg.y][seg.x] = $sn.name[0]
-    grid[sn.head.y][sn.head.x] = "H"
-
-  for seg in s.you.body:
-    grid[seg.y][seg.x] = "Y"
-  grid[s.you.head.x][s.you.head.x] = "y"
-
-  for food in s.board.food:
-    grid[food.y][food.x] = "F"
-
-  for row in grid:
-    for column in row:
-      case column
-      of "":
-        result &= " "
-      else:
-        result &= column
-    result &= "\n"
+  false
 
 when isMainModule:
   import unittest
