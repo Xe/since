@@ -177,7 +177,7 @@ proc findPath*(s: State, source, target: CoordinatePair): Path =
     result.add point
 
 when isMainModule:
-  import json, logging, unittest
+  import json, logging, os, unittest
   newConsoleLogger().addHandler
 
   suite "coordinates":
@@ -298,3 +298,29 @@ when isMainModule:
           myPath.len >= 2
           not (s.board.isDeadly myPath[1])
 
+  # suite "against random games":
+  #   type GameInfo = object
+  #     state: State
+  #     target: CoordinatePair
+  #     path: Path
+  #     myMove: string
+  #   test "some games":
+  #     for fName in walkFiles("./testdata/games/*"):
+  #       info fmt"testing {fName}"
+  #       let
+  #         data = fName.readFile
+  #         gis = data.parseJson.to(seq[GameInfo])
+  #       for gi in gis:
+  #         debug fmt"{fName} turn {gi.state.turn}"
+  #         let
+  #           s = gi.state
+  #           source = s.you.head
+  #           target = s.findTarget
+  #           myPath = s.findPath(source, target)
+  #         debug fmt"path: {myPath}"
+  #         check:
+  #           myPath.len >= 2
+  #           not (s.board.isDeadly myPath[1])
+  #         let myMove = source -> myPath[1]
+  #         if myMove != gi.myMove:
+  #           info fmt"deviation from previous plan, previously picked: {gi.myMove}, new direction: {myMove}"

@@ -74,7 +74,7 @@ routes:
     resp "OK"
 
   get "/inspect/@gameId":
-    resp Http200, $await getGame(@"gameId"), "application/json"
+    resp Http200, pretty await getGame(@"gameId"), "application/json"
 
   get "/inspect/@gameId/@turn":
-    resp Http200, $await getData(@"gameId", @"turn"), "application/json"
+    resp Http200, pretty await getData(@"gameId", @"turn"), "application/json"
