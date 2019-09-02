@@ -93,7 +93,7 @@ proc isDeadly(b: Board, p: CoordinatePair): bool =
   return false
 
 proc isEdge(b: Board, p: CoordinatePair): bool =
-  if p.x == 0 or p.y == 0 or p.x = b.width-1 or p.y == b.height-1:
+  if p.x == 0 or p.y == 0 or p.x == b.width-1 or p.y == b.height-1:
     result = true
   else:
     result = false
