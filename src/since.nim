@@ -79,7 +79,7 @@ routes:
 
       resp Http200, $ret, "application/json"
     except:
-      info fmt"{getCurrentException()}: {getCurrentExceptionMsg()}"
+      info fmt"{getCurrentException().name}: {getCurrentExceptionMsg()}"
       info "random move"
 
       let ret = %* {
