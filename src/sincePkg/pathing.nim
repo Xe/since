@@ -36,6 +36,9 @@ proc newCP*(x, y: int): CoordinatePair =
 func `==`*(a, b: CoordinatePair): bool =
   a.x == b.x and a.y == b.y
 
+func `!=`* (a, b: CoordinatePair): bool =
+  not (a == b)
+
 func `$`*(p: CoordinatePair): string =
   fmt"({p.x}, {p.y})"
 
@@ -102,13 +105,13 @@ proc isEdge(b: Board, p: CoordinatePair): bool =
     result = false
 
 proc heuristic*(b: Board, node, goal: CoordinatePair): float =
+  if b.isDeadly node:
+    return enemyThere
   chebyshev[CoordinatePair, float](node, goal)
 
 proc findFood(s: State): CoordinatePair =
   var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
   for cp in s.board.food:
-    if s.board.isEdge(cp):
-      continue
     foods.add(
         (
           manhattan[CoordinatePair, float](s.you.head(), cp),
@@ -127,13 +130,19 @@ proc randomSafeTile(b: Board): CoordinatePair =
   if b.isDeadly(result):
     result = b.randomSafeTile
 
+proc findTail(s: State): CoordinatePair =
+  for ne in s.board.neighbors(s.you.tail):
+    if not s.board.isDeadly(ne):
+      return ne
+
 proc findTarget*(s: State): CoordinatePair =
+  result = newCP(-1, -1)
   var biggestLen = 0
   for snake in s.board.snakes:
     if snake.body.len > biggestLen:
       biggestLen = snake.body.len
   if s.you.health <= 30 or s.you.body.len <= biggestLen:
-    debug "seeking food"
+    debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
     result = findFood(s)
   else:
     debug "chasing tail"
@@ -146,7 +155,7 @@ proc findTarget*(s: State): CoordinatePair =
         return s.board.randomSafeTile
 
 when isMainModule:
-  import unittest
+  import json, unittest
 
   suite "coordinates":
     test "equality":
@@ -171,3 +180,69 @@ when isMainModule:
           failed = true
 
       assert not failed
+
+  suite "board":
+    test "randomSafeTile":
+      let b = Board(
+        height: 11,
+        width: 11,
+        food: newSeq[CoordinatePair](),
+        snakes: @[
+          Snake(
+            id: "footest",
+            name: "foo / bar",
+            health: 9001,
+            body: @[
+              newCP(1, 1),
+            ],
+          ),
+          Snake(
+            id: "footest",
+            name: "foo / bar",
+            health: 9001,
+            body: @[
+              newCP(9, 9),
+            ],
+          ),
+        ],
+      )
+
+      let deadlyPoints = @[newCP(1, 1), newCP(9, 9)]
+
+      for _ in 1..100:
+        let rp = b.randomSafeTile
+
+        for dp in deadlyPoints:
+          check(rp != dp)
+
+  suite "targetFinding":
+    template checkTargetIsntDeadly() =
+      for snk in s.board.snakes:
+        check not (target in snk.body)
+        check:
+          target != newCP(0, 0)
+          target != newCP(-1, -1)
+
+    test "findFood":
+      const stData = slurp "./testdata/state_findfood.json"
+      let
+        ss = stData.parseJson.to(seq[State])
+      for s in ss:
+        let
+          target = s.findFood
+        check target in s.board.food
+        checkTargetIsntDeadly()
+
+    test "findTail":
+      const stData = slurp "./testdata/state_findtarget.json"
+      let
+        s = stData.parseJson.to(State)
+        target = s.findTail
+      checkTargetIsntDeadly()
+
+    test "findTarget":
+      const stData = slurp "./testdata/state_findtarget.json"
+      let
+        s = stData.parseJson.to(State)
+        target = s.findTarget
+      checkTargetIsntDeadly()
