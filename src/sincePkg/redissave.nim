@@ -1,11 +1,11 @@
-import asyncdispatch, json, os, redis, strformat
+import algorithm, asyncdispatch, json, os, redis, strformat
 import pathing, redisurl
 
 type GameData* = object
-  state: State
-  target: CoordinatePair
-  myMove: string
-  path: Path
+  state*: State
+  target*: CoordinatePair
+  myMove*: string
+  path*: Path
 
 var redisClient: AsyncRedis
 
@@ -41,7 +41,7 @@ proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path) {.a
 proc getGame*(gameId: string): Future[JsonNode] {.async.} =
   result = newJArray()
 
-  let keys = (await redisClient.keys(fmt"{gameId}:*")).sort
+  let keys = await redisClient.keys(fmt"{gameId}:*")
   for key in keys:
     let data = await redisClient.get(key)
     result.add data.parseJson
