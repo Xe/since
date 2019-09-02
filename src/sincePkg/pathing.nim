@@ -242,7 +242,7 @@ when isMainModule:
               source = s.you.head
               target = s.findTarget
               myPath = s.findPath(source, target.cp)
-            echo s.view(myPath)
+            #echo s.view(myPath)
             debug fmt"path: {myPath}"
             if myPath.len > 0:
               check:
