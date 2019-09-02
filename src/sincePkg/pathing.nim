@@ -93,30 +93,39 @@ proc isDeadly(b: Board, p: CoordinatePair): bool =
   return false
 
 proc heuristic*(b: Board, node, goal: CoordinatePair): float =
-  if b.isDeadly(goal):
-    return enemyThere
   manhattan[CoordinatePair, float](node, goal)
 
-proc findTarget*(s: State): CoordinatePair =
-  if s.you.health <= 30 or s.you.body.len < 6:
-    debug "seeking food"
-    var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
-    for cp in s.board.food:
-      foods.add(
+proc findFood(s: State): CoordinatePair =
+  var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
+  for cp in s.board.food:
+    foods.add(
         (
           manhattan[CoordinatePair, float](s.you.head(), cp),
           cp
         )
-      )
-    var lowest = 999999.9999 # XXX(Xe): HACK
-    for data in foods:
-      if data.cost < lowest:
-        lowest = data.cost
-        result = data.point
-    return result
+    )
+  var lowest = 999999.9999 # XXX(Xe): HACK
+  for data in foods:
+    if data.cost < lowest:
+      lowest = data.cost
+      result = data.point
 
+proc findTarget*(s: State): CoordinatePair =
+  var biggestLen = 0
+  for snake in board.snakes:
+    if snake.body.len > biggestLen:
+      biggestLen = snake.body.len
+  if s.you.health <= 30 or s.you.body.len <= biggestLen:
+    debug "seeking food"
+    return findFood(s)
   debug "chasing tail"
   result = s.you.tail
+  for snake in board.snakes:
+    if s.you.id == snake.id:
+      continue
+    for next in neighbors(b, snake.head):
+      if result == next:
+        return findFood(s)
 
 when isMainModule:
   import unittest
