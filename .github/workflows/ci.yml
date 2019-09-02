@@ -21,6 +21,6 @@ jobs:
       env:
         FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Deploy
-      run: git push dokku@minipaas.xeserv.us:since HEAD
+      run: git push dokku@minipaas.xeserv.us:since HEAD:master
       env:
         GIT_SSH_COMMAND: "ssh -i ~/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
