@@ -2,42 +2,18 @@ import astar, asyncdispatch, dotenv,
        jester, json, logging, os, redis,
        strformat, strutils
 
-import sincePkg/[pathing, redisurl]
+import sincePkg/[pathing, redissave]
 
 try: initDotEnv().overload
 except: discard
+newConsoleLogger().addHandler
 
-let
-  creds = redisurl.parse getEnv("REDIS_URL")
-  redisClient = waitFor openAsync(creds.host, creds.port)
-
+waitFor redissave.init getEnv "REDIS_URL"
 info "redis client initialized"
-
-if creds.password != "":
-  waitFor redisClient.auth creds.password
 
 settings:
   bindAddr = getEnv "BIND_ADDR"
   port = getEnv("PORT").parseInt.Port
-
-proc pingRedis() {.async.} =
-  while true:
-    await sleepAsync 5_000
-    discard await redisClient.ping
-
-asyncCheck pingRedis()
-
-func createKey(s: State): string =
-  fmt"{s.game.id}:{s.turn}"
-
-proc saveTurn(s: State, target: CoordinatePair, myMove: string) {.async.} =
-  let toWrite = %* {
-    "state": s,
-    "target": target,
-    "myMove": myMove
-  }
-
-  await redisClient.setk(s.createKey, $toWrite)
 
 routes:
   get "/":
