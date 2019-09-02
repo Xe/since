@@ -102,7 +102,7 @@ proc isEdge(b: Board, p: CoordinatePair): bool =
     result = false
 
 proc heuristic*(b: Board, node, goal: CoordinatePair): float =
-  manhattan[CoordinatePair, float](node, goal)
+  chebyshev[CoordinatePair, float](node, goal)
 
 proc findFood(s: State): CoordinatePair =
   var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
