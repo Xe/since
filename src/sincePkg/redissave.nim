@@ -6,6 +6,7 @@ type GameData* = object
   target*: CoordinatePair
   myMove*: string
   path*: Path
+  desc*: string
 
 var redisClient: AsyncRedis
 
@@ -28,12 +29,13 @@ proc createKey(gameId, turn: string): string =
 proc createKey(s: State): string =
   createKey(s.game.id, $s.turn)
 
-proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path) {.async.} =
+proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, desc: string) {.async.} =
   let toWrite = %* {
     "state": s,
     "target": target,
     "path": path,
-    "myMove": myMove
+    "myMove": myMove,
+    "desc": desc
   }
 
   await redisClient.setk(s.createKey, $toWrite)

@@ -44,17 +44,23 @@ routes:
     var
       lastInfo: GameData
       target: CoordinatePair
+      desc: string
 
     if state.turn != 1:
       lastInfo = (await getData(state.game.id, $(state.turn-1))).to(GameData)
       target = lastInfo.target
+      desc = lastInfo.desc
     else:
-      target = state.findTarget
+      let interm = state.findTarget
+      target = interm.cp
+      desc = interm.state
 
     let source = state.you.head
 
-    if source == target:
-      target = state.findTarget
+    if source == target or state.board.isDeadly(target):
+      let interm = state.findTarget
+      target = interm.cp
+      desc = interm.state
 
     let myPath = state.findPath(source, target)
     var
@@ -68,7 +74,7 @@ routes:
 
     info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
     debug fmt"path: {myPath}"
-    asyncCheck saveTurn(state, target, myMove, myPath)
+    asyncCheck saveTurn(state, target, myMove, myPath, desc)
 
     let ret = %* {
       "move": myMove

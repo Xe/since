@@ -92,7 +92,7 @@ proc cost*(brd: Board, a, b: CoordinatePair): float =
 
   return good
 
-proc isDeadly(b: Board, p: CoordinatePair): bool =
+proc isDeadly*(b: Board, p: CoordinatePair): bool =
   for enemy in b.snakes:
     for seg in enemy.body:
       if seg == p:
@@ -100,7 +100,7 @@ proc isDeadly(b: Board, p: CoordinatePair): bool =
 
   return false
 
-proc isEdge(b: Board, p: CoordinatePair): bool =
+proc isEdge*(b: Board, p: CoordinatePair): bool =
   if p.x == 0 or p.y == 0 or p.x == b.width-1 or p.y == b.height-1:
     result = true
   else:
@@ -142,8 +142,8 @@ proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
 proc findTail(s: State): CoordinatePair =
   s.findSafeNeighbor(s.you.tail)
 
-proc findTarget*(s: State): CoordinatePair =
-  result = newCP(-1, -1)
+proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string] =
+  result = (newCP(-1, -1), "invalid")
   var
     totalLen = 0
     biggestLen = 0
@@ -156,19 +156,19 @@ proc findTarget*(s: State): CoordinatePair =
   if s.board.food.len >= 1:
     if s.you.health <= 30 or s.you.body.len <= biggestLen:
       debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
-      result = findFood(s)
+      result = (findFood(s), "food")
   elif s.you.body.len.float > avgLen:
     debug fmt"hunting (myLen: {s.you.body.len}, avgLen: {avgLen})"
     for snake in s.board.snakes:
       if snake.body.len < s.you.body.len:
-        result = s.findSafeNeighbor(snake.head)
+        result = (s.findSafeNeighbor(snake.head), "hunting")
   else:
     debug "chasing tail"
-    result = s.findTail
+    result = (s.findTail, "tail")
 
-  if s.board.isDeadly result:
+  if s.board.isDeadly(result.cp):
     debug fmt"chosen target {result} is deadly!"
-    return s.board.randomSafeTile
+    return (s.board.randomSafeTile, "random")
 
   debug fmt"target: {result}"
 
@@ -179,7 +179,7 @@ proc findPath*(s: State, source, target: CoordinatePair): Path =
 
 when isMainModule:
   import json, logging, os, unittest
-  newConsoleLogger().addHandler
+  #newConsoleLogger().addHandler
 
   suite "coordinates":
     test "equality":
@@ -273,7 +273,7 @@ when isMainModule:
     test "findTarget":
       let
         s = findTargetData.parseJson.to(State)
-        target = s.findTarget
+        target = s.findTarget.cp
       checkTargetIsntDeadly()
 
   suite "findPath":
@@ -283,7 +283,8 @@ when isMainModule:
         let
           source = s.you.head
           target = s.findTarget
-          myPath = s.findPath(source, target)
+          myPath = s.findPath(source, target.cp)
+        debug fmt"{target} -> {myPath}"
         check:
           myPath.len >= 2
           not (s.board.isDeadly myPath[1])
@@ -294,7 +295,7 @@ when isMainModule:
         let
           source = s.you.head
           target = s.findTarget
-          myPath = s.findPath(source, target)
+          myPath = s.findPath(source, target.cp)
         check:
           myPath.len >= 2
           not (s.board.isDeadly myPath[1])
@@ -305,23 +306,22 @@ when isMainModule:
       target: CoordinatePair
       path: Path
       myMove: string
-    test "some games":
-      for fName in walkFiles("./testdata/games/*"):
-        info fmt"testing {fName}"
+    for fName in walkFiles("./testdata/games/*"):
+      test fName:
         let
           data = fName.readFile
           gis = data.parseJson.to(seq[GameInfo])
         for gi in gis:
-          debug fmt"{fName} turn {gi.state.turn}"
-          let
-            s = gi.state
-            source = s.you.head
-            target = s.findTarget
-            myPath = s.findPath(source, target)
-          debug fmt"path: {myPath}"
-          check:
-            myPath.len >= 2
-            not (s.board.isDeadly myPath[1])
-          let myMove = source -> myPath[1]
-          if myMove != gi.myMove:
-            info fmt"deviation from previous plan, previously picked: {gi.myMove}, new direction: {myMove}"
+          test fmt"turn {gi.state.turn}":
+            let
+              s = gi.state
+              source = s.you.head
+              target = s.findTarget
+              myPath = s.findPath(source, target.cp)
+            debug fmt"path: {myPath}"
+            check:
+              myPath.len >= 2
+              not (s.board.isDeadly myPath[1])
+            let myMove = source -> myPath[1]
+            if myMove != gi.myMove:
+              info fmt"deviation from previous plan, previously picked: {gi.myMove}, new direction: {myMove}"
