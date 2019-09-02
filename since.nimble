@@ -15,10 +15,10 @@ requires "nim >= 0.20.2", "jester", "redis", "astar#head", "dotenv"
 task test, "run tests":
   echo "running tests..."
   withDir "src/sincePkg":
-    let testFiles = @["pathing"]
+    let testFiles = @["pathing", "redisurl"]
 
     for tf in testFiles:
       echo "testing " & tf
-      exec "nim c --verbosity:0 -r " & tf
+      exec "nim c --hints:off --verbosity:0 -r " & tf
       rmFile tf.toExe
       echo "passed!"
