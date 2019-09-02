@@ -92,12 +92,20 @@ proc isDeadly(b: Board, p: CoordinatePair): bool =
 
   return false
 
+proc isEdge(b: Board, p: CoordinatePair): bool =
+  if p.x == 0 or p.y == 0 or p.x = b.width-1 or p.y == b.height-1:
+    result = true
+  else:
+    result = false
+
 proc heuristic*(b: Board, node, goal: CoordinatePair): float =
   manhattan[CoordinatePair, float](node, goal)
 
 proc findFood(s: State): CoordinatePair =
   var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
   for cp in s.board.food:
+    if s.board.isEdge(cp):
+      continue
     foods.add(
         (
           manhattan[CoordinatePair, float](s.you.head(), cp),
