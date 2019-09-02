@@ -62,6 +62,22 @@ func head*(s: Snake): CoordinatePair =
 func tail*(s: Snake): CoordinatePair =
   s.body[s.body.len - 1]
 
+proc isDeadly*(b: Board, p: CoordinatePair): bool =
+  for enemy in b.snakes:
+    for seg in enemy.body:
+      if seg == p:
+        return true
+
+      return false
+
+proc isDangerous*(s: State, p: CoordinatePair): bool =
+  for loc in s.allNeighbors p:
+    for sn in s.board.snakes:
+      if loc == sn.head:
+        return true
+
+      false
+
 template yieldIfExists*(s: State, p: CoordinatePair) =
   let exists =
     p.x >= 0 and p.x < s.board.width and

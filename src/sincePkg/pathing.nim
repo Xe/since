@@ -32,22 +32,6 @@ proc cost*(st: State, a, b: CoordinatePair): float =
 
   return good
 
-proc isDeadly*(b: Board, p: CoordinatePair): bool =
-  for enemy in b.snakes:
-    for seg in enemy.body:
-      if seg == p:
-        return true
-
-  return false
-
-proc isDangerous*(s: State, p: CoordinatePair): bool =
-  for loc in s.allNeighbors p:
-    for sn in s.board.snakes:
-      if loc == sn.head:
-        return true
-
-  false
-
 proc isEdge*(b: Board, p: CoordinatePair): bool =
   if p.x == 0 or p.y == 0 or p.x == b.width-1 or p.y == b.height-1:
     result = true
