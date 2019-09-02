@@ -10,16 +10,19 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: docker build .
+    - name: Setup SSH
+      run: mkdir ~/.ssh
     - name: Write SSH Key
-      uses: finnp/create-file-action@1.0.0
+      run: echo $FILE_DATA > ~/.ssh/id_rsa && md5sum ~/.ssh/id_rsa
       env:
         FILE_NAME: id_rsa
         FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Write minipaas host key
-      uses: finnp/create-file-action@1.0.0
+      run: echo $FILE_DATA > ~/.ssh/known_hosts
       env:
         FILE_NAME: known_hosts
         FILE_DATA: ${{ secrets.MINIPAAS_HOST_KEYS }}
     - name: Deploy
-      run: |
-        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && mv known_hosts ~/.ssh/known_hosts && git push dokku@minipaas.xeserv.us:since HEAD
+      run: git push dokku@minipaas.xeserv.us:since HEAD
+      env:
+        GIT_SSH_COMMAND: "ssh -i ~/.ssh/id_rsa -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
