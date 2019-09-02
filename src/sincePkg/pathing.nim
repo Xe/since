@@ -17,14 +17,17 @@ proc cost*(st: State, a, b: CoordinatePair): float =
   for s in st.board.snakes:
     for cp in s.body:
       if b == cp:
-        return enemyThere
-      if s.id == st.you.id:
-        continue
-      for ne in st.allNeighbors(cp):
+        result += enemyThere
+        if s.id == st.you.id:
+          result += selfThere
+      for ne in st.neighbors(cp):
         if b == ne:
-          return potentialEnemyMovement
+          result += potentialEnemyMovement
+        for ne2 in st.neighbors(ne):
+          if b == ne2:
+            result += potentialEnemyMovement
 
-  return good
+  result += good
 
 proc isEdge*(b: Board, p: CoordinatePair): bool =
   if p.x == 0 or p.y == 0 or p.x == b.width-1 or p.y == b.height-1:
