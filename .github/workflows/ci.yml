@@ -15,6 +15,11 @@ jobs:
       env:
         FILE_NAME: id_rsa
         FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Write minipaas host key
+      uses: finnp/create-file-action@1.0.0
+      env:
+        FILE_NAME: known_hosts
+        FILE_DATA: ${{ secrets.MINIPAAS_HOST_KEYS }}
     - name: Deploy
       run: |
-        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && git push dokku@minipaas.xeserv.us:since HEAD
+        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && mv known_hosts ~/.ssh/known_hosts && git push dokku@minipaas.xeserv.us:since HEAD
