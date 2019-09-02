@@ -49,7 +49,7 @@ routes:
       myPath.add point
     let myMove = source -> myPath[1]
 
-    info fmt"game {state.game.id} turn {state.turn}: moving {myMove}"
+    info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
     debug fmt"path: {myPath}"
     asyncCheck saveTurn(state, target, myMove)
 
