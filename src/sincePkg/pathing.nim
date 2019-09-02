@@ -1,4 +1,4 @@
-import astar, hashes, strformat
+import astar, hashes, logging, strformat
 
 type
   Game* = object
@@ -88,7 +88,8 @@ proc heuristic*(b: Board, node, goal: CoordinatePair): float =
   manhattan[CoordinatePair, float](node, goal)
 
 proc findTarget*(s: State): CoordinatePair =
-  if s.you.health <= 30:
+  if s.you.health <= 30 or s.you.body.len < 6:
+    debug "seeking food"
     var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
     for cp in s.board.food:
       foods.add(
@@ -104,6 +105,7 @@ proc findTarget*(s: State): CoordinatePair =
         result = data.point
     return result
 
+  debug "chasing tail"
   result = s.you.tail
 
 when isMainModule:

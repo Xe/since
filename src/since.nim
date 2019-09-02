@@ -46,10 +46,11 @@ routes:
     var
       myPath = newSeq[CoordinatePair]()
     for point in path[Board, CoordinatePair, float](state.board, source, target):
-      mypath.add point
+      myPath.add point
     let myMove = source -> myPath[1]
 
     info fmt"game {state.game.id} turn {state.turn}: moving {myMove}"
+    debug fmt"path: {myPath}"
     asyncCheck saveTurn(state, target, myMove)
 
     let ret = %* {
