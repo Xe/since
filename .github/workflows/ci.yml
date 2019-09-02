@@ -17,4 +17,4 @@ jobs:
         FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Deploy
       run: |
-        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && git push dokku@minipaas.xeserv.us:since master
+        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && git push dokku@minipaas.xeserv.us:since HEAD
