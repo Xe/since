@@ -13,13 +13,9 @@ jobs:
     - name: Setup SSH
       run: mkdir ~/.ssh
     - name: Write SSH Key
-      run: echo $FILE_DATA > ~/.ssh/id_rsa && md5sum ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      run: echo $FILE_DATA | base64 -d > ~/.ssh/id_rsa && md5sum ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
       env:
         FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
-    - name: Write minipaas host key
-      run: echo $FILE_DATA > ~/.ssh/known_hosts
-      env:
-        FILE_DATA: ${{ secrets.MINIPAAS_HOST_KEYS }}
     - name: Deploy
       run: git push dokku@minipaas.xeserv.us:since HEAD
       env:
