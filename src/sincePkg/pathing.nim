@@ -1,4 +1,4 @@
-import astar, hashes, logging, strformat
+import astar, hashes, logging, random, strformat
 
 type
   Game* = object
@@ -140,7 +140,7 @@ proc findTarget*(s: State): CoordinatePair =
       continue
     for next in neighbors(s.board, snake.head):
       if result == next:
-        return state.board.randomSafeTile
+        return s.board.randomSafeTile
 
 when isMainModule:
   import unittest
