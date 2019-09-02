@@ -1,4 +1,4 @@
-import algorithm, asyncdispatch, json, os, redis, strformat
+import algorithm, asyncdispatch, json, os, redis, strformat, strutils
 import pathing, redisurl
 
 type GameData* = object
@@ -32,6 +32,12 @@ proc createKey(gameId, turn: string): string =
 proc createKey(s: State): string =
   createKey(s.game.id, $s.turn)
 
+proc compareKey(a, b: string): int =
+  aSp = a.split(":")
+  bSp = b.split(":")
+
+  return cmp[int](aSp[1].parseInt, bSp[1].parseInt)
+
 proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, desc: string) {.async.} =
   let toWrite = %* {
     "state": s,
@@ -47,7 +53,7 @@ proc getGame*(gameId: string): Future[JsonNode] {.async.} =
   result = newJArray()
 
   var keys = await redisClient.keys(fmt"{gameId}:*")
-  keys.sort
+  keys.sort compareKey
   for key in keys:
     let data = await redisClient.get(key)
     result.add data.parseJson

@@ -7,6 +7,7 @@ const
   enemyThere* = 999
   selfThere* = 9999
   potentialEnemyMovement* = 50
+  dangerousPlace* = 100
 
 iterator neighbors*(b: State, p: CoordinatePair): CoordinatePair =
   b.yieldIfExists newCP(p.x - 1, p.y)
@@ -35,6 +36,14 @@ proc isDeadly*(b: Board, p: CoordinatePair): bool =
 
   return false
 
+proc isDangerous*(s: State, p: CoordinatePair): bool =
+  for loc in s.neighbors p:
+    for sn in s.board.snakes:
+      if loc == sn.head:
+        return true
+
+  false
+
 proc isEdge*(b: Board, p: CoordinatePair): bool =
   if p.x == 0 or p.y == 0 or p.x == b.width-1 or p.y == b.height-1:
     result = true
@@ -42,6 +51,10 @@ proc isEdge*(b: Board, p: CoordinatePair): bool =
     result = false
 
 proc heuristic*(s: State, node, goal: CoordinatePair): float =
+  if node in s.you.body:
+    return selfThere
+  if s.isDangerous node:
+    return dangerousPlace
   if s.board.isDeadly node:
     return enemyThere
   chebyshev[CoordinatePair, float](node, goal)
@@ -111,6 +124,8 @@ proc findPath*(s: State, source, target: CoordinatePair): Path =
   result = newSeq[CoordinatePair]()
   for point in path[State, CoordinatePair, float](s, source, target):
     result.add point
+  if result.len >= 2 and s.board.isDeadly result[1]:
+    return s.findPath(source, s.board.randomSafeTile)
 
 when isMainModule:
   import json, logging, os, unittest
@@ -204,9 +219,10 @@ when isMainModule:
           source = s.you.head
           target = s.findTarget
           myPath = s.findPath(source, target.cp)
-        check:
-          myPath.len >= 2
-          not (s.board.isDeadly myPath[1])
+        if myPath.len != 0:
+          check:
+            myPath.len >= 2
+            not (s.board.isDeadly myPath[1])
 
   suite "against random games":
     type GameInfo = object
@@ -220,16 +236,15 @@ when isMainModule:
           data = fName.readFile
           gis = data.parseJson.to(seq[GameInfo])
         for gi in gis:
-          test fmt"turn {gi.state.turn}":
+          test fmt"{gi.state.game.id} turn {gi.state.turn}":
             let
               s = gi.state
               source = s.you.head
               target = s.findTarget
               myPath = s.findPath(source, target.cp)
+            echo s.view(myPath)
             debug fmt"path: {myPath}"
-            check:
-              myPath.len >= 2
-              not (s.board.isDeadly myPath[1])
-            let myMove = source -> myPath[1]
-            if myMove != gi.myMove:
-              info fmt"deviation from previous plan, previously picked: {gi.myMove}, new direction: {myMove}"
+            if myPath.len > 0:
+              check:
+                myPath.len >= 2
+                not (s.board.isDeadly myPath[1])

@@ -69,6 +69,34 @@ template yieldIfExists*(s: State, p: CoordinatePair) =
   if exists:
     yield p
 
+proc view*(s: State, p: Path): string =
+  var grid = newSeq[seq[string]](s.board.height)
+  for i in 0 .. < s.board.height:
+    grid[i] = newSeq[string](s.board.width)
+
+  for elem in p:
+    grid[elem.y][elem.x] = "p"
+
+  for sn in s.board.snakes:
+    for seg in sn.body:
+      grid[seg.y][seg.x] = $sn.name[0]
+    grid[sn.head.y][sn.head.x] = "H"
+
+  for seg in s.you.body:
+    grid[seg.y][seg.x] = "Y"
+  grid[s.you.head.x][s.you.head.x] = "y"
+
+  for food in s.board.food:
+    grid[food.y][food.x] = "F"
+
+  for row in grid:
+    for column in row:
+      case column
+      of "":
+        result &= " "
+      else:
+        result &= column
+    result &= "\n"
 when isMainModule:
   import unittest
 
