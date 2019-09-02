@@ -32,6 +32,14 @@ proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: seq[Coord
 
   await redisClient.setk(s.createKey, $toWrite)
 
+proc getGame*(gameId: string): Future[JsonNode] {.async.} =
+  result = newJArray()
+
+  let keys = await redisClient.keys(fmt"{gameId}:*")
+  for key in keys:
+    let data = await redisClient.get(key)
+    result.add data.parseJson
+
 proc getData*(gameId, turn: string): Future[JsonNode] {.async.} =
   let data = await redisClient.get(createKey(gameId, turn))
   result = data.parseJson
