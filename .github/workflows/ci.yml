@@ -1,10 +1,20 @@
-name: CI
-on: [push]
+name: "CI/CD"
+on: 
+  push:
+    branches:
+    - master
 jobs:
   build:
-    runs-on: ubuntu-latest
- 
+    runs-on: ubuntu-latest 
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
       run: docker build .
+    - name: Write SSH Key
+      uses: finnp/create-file-action@1.0.0
+      env:
+        FILE_NAME: id_rsa
+        FILE_DATA: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Deploy
+      run: |
+        mkdir ~/.ssh && mv id_rsa ~/.ssh/id_rsa && git push dokku@minipaas.xeserv.us:since master
