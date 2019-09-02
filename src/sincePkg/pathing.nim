@@ -118,6 +118,12 @@ proc findFood(s: State): CoordinatePair =
       lowest = data.cost
       result = data.point
 
+randomize()
+proc randomSafeTile(b: Board): CoordinatePair =
+  result = newCP(rand(b.width), rand(b.height))
+  if b.isDeadly(result):
+    result = b.randomSafeTile
+
 proc findTarget*(s: State): CoordinatePair =
   var biggestLen = 0
   for snake in s.board.snakes:
@@ -125,15 +131,16 @@ proc findTarget*(s: State): CoordinatePair =
       biggestLen = snake.body.len
   if s.you.health <= 30 or s.you.body.len <= biggestLen:
     debug "seeking food"
-    return findFood(s)
-  debug "chasing tail"
-  result = s.you.tail
+    result = findFood(s)
+  else:
+    debug "chasing tail"
+    result = s.you.tail
   for snake in s.board.snakes:
     if s.you.id == snake.id:
       continue
     for next in neighbors(s.board, snake.head):
       if result == next:
-        return findFood(s)
+        return state.board.randomSafeTile
 
 when isMainModule:
   import unittest
