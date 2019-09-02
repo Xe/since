@@ -41,9 +41,22 @@ routes:
   post "/move":
     let
       state = request.body.parseJson.to(State)
-      source = state.you.head
+    var
+      lastInfo: GameData
+      target: CoordinatePair
+
+    if state.turn != 1:
+      lastInfo = (await getData(state.game.id, $(state.turn-1))).to(GameData)
+      target = lastInfo.target
+    else:
       target = state.findTarget
-      myPath = state.findPath(source, target)
+
+    let source = state.you.head
+
+    if source == target:
+      target = state.findTarget
+
+    let myPath = state.findPath(source, target)
     var
       myMove: string
 
