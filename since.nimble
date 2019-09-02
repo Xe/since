@@ -6,11 +6,11 @@ description   = ".i le mi nundambysince"
 license       = "0BSD"
 srcDir        = "src"
 binDir        = "bin"
-bin           = @["since"]
+bin           = @["since", "sincePkg/catlu"]
 
 # Dependencies
 
-requires "nim >= 0.20.2", "jester", "redis", "astar#head", "dotenv"
+requires "nim >= 0.20.2", "jester", "redis", "astar#head", "dotenv", "cligen", "nimbox"
 
 task setupremote, "set up dokku remote":
   exec "git remote add dokku dokku@minipaas.xeserv.us:since"

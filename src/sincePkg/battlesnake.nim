@@ -97,6 +97,7 @@ proc view*(s: State, p: Path): string =
       else:
         result &= column
     result &= "\n"
+
 when isMainModule:
   import unittest
 
