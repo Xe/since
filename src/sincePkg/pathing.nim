@@ -182,7 +182,7 @@ when isMainModule:
               myPath = s.findPath(source, target.cp)
             #echo s.view(myPath)
             debug fmt"path: {myPath}"
-            if myPath.len > 0:
-              check:
-                myPath.len >= 2
-                not (s.board.isDeadly myPath[1])
+            check:
+              myPath.len != 0
+              myPath.len >= 2
+              not (s.board.isDeadly myPath[1])
