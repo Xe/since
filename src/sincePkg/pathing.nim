@@ -84,7 +84,17 @@ proc cost*(brd: Board, a, b: CoordinatePair): float =
 
   return good
 
+proc isDeadly(b: Board, p: CoordinatePair): bool =
+  for enemy in b.snakes:
+    for seg in enemy.body:
+      if seg == p:
+        return true
+
+  return false
+
 proc heuristic*(b: Board, node, goal: CoordinatePair): float =
+  if b.isDeadly(goal):
+    return enemyThere
   manhattan[CoordinatePair, float](node, goal)
 
 proc findTarget*(s: State): CoordinatePair =
