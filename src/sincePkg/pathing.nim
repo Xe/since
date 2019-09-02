@@ -8,18 +8,18 @@ const
   selfThere* = 9999
   potentialEnemyMovement* = 50
 
-iterator neighbors*(b: Board, p: CoordinatePair): CoordinatePair =
+iterator neighbors*(b: State, p: CoordinatePair): CoordinatePair =
   b.yieldIfExists newCP(p.x - 1, p.y)
   b.yieldIfExists newCP(p.x + 1, p.y)
   b.yieldIfExists newCP(p.x, p.y - 1)
   b.yieldIfExists newCP(p.x, p.y + 1)
 
-proc cost*(brd: Board, a, b: CoordinatePair): float =
-  for s in brd.snakes:
+proc cost*(st: State, a, b: CoordinatePair): float =
+  for s in st.board.snakes:
     for cp in s.body:
       if b == cp:
         return enemyThere
-      for ne in brd.neighbors(cp):
+      for ne in st.neighbors(cp):
         if b == ne:
           return potentialEnemyMovement
 
@@ -39,8 +39,8 @@ proc isEdge*(b: Board, p: CoordinatePair): bool =
   else:
     result = false
 
-proc heuristic*(b: Board, node, goal: CoordinatePair): float =
-  if b.isDeadly node:
+proc heuristic*(s: State, node, goal: CoordinatePair): float =
+  if s.board.isDeadly node:
     return enemyThere
   chebyshev[CoordinatePair, float](node, goal)
 
@@ -68,7 +68,7 @@ proc randomSafeTile(b: Board): CoordinatePair =
     result = b.randomSafeTile
 
 proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
-  for ne in s.board.neighbors(p):
+  for ne in s.neighbors(p):
     if not s.board.isDeadly(ne):
       return ne
 
@@ -107,7 +107,7 @@ proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string] =
 
 proc findPath*(s: State, source, target: CoordinatePair): Path =
   result = newSeq[CoordinatePair]()
-  for point in path[Board, CoordinatePair, float](s.board, source, target):
+  for point in path[State, CoordinatePair, float](s, source, target):
     result.add point
 
 when isMainModule:

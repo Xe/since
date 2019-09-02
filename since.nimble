@@ -21,7 +21,5 @@ task test, "run tests":
     let testFiles = @["battlesnake", "pathing", "redissave", "redisurl"]
 
     for tf in testFiles:
-      echo "testing " & tf
       exec "nim c --hints:off --verbosity:0 -r " & tf
       rmFile tf.toExe
-      echo "passed!"

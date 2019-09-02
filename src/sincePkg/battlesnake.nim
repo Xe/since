@@ -62,10 +62,10 @@ func head*(s: Snake): CoordinatePair =
 func tail*(s: Snake): CoordinatePair =
   s.body[s.body.len - 1]
 
-template yieldIfExists*(b: Board, p: CoordinatePair) =
+template yieldIfExists*(s: State, p: CoordinatePair) =
   let exists =
-    p.x >= 0 and p.x < b.width and
-    p.y >= 0 and p.y < b.height
+    p.x >= 0 and p.x < s.board.width and
+    p.y >= 0 and p.y < s.board.height
   if exists:
     yield p
 
