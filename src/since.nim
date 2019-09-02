@@ -1,6 +1,6 @@
 import astar, asyncdispatch, dotenv,
-       jester, json, logging, os, redis,
-       strformat, strutils
+       jester, json, logging, os, random,
+       redis, strformat, strutils
 
 import sincePkg/[pathing, redissave]
 
@@ -41,13 +41,17 @@ routes:
   post "/move":
     let
       state = request.body.parseJson.to(State)
-      source = state.you.head()
+      source = state.you.head
       target = state.findTarget
+      myPath = state.findPath(source, target)
     var
-      myPath = newSeq[CoordinatePair]()
-    for point in path[Board, CoordinatePair, float](state.board, source, target):
-      myPath.add point
-    let myMove = source -> myPath[1]
+      myMove: string
+
+    if myPath.len >= 2:
+      myMove = source -> myPath[1]
+    else:
+      debug fmt"can't find a path?"
+      myMove = sample ["up", "left", "right", "down"]
 
     info fmt"game {state.game.id} turn {state.turn}: moving {myMove} to get to {target}"
     debug fmt"path: {myPath}"

@@ -6,6 +6,7 @@ type
   CoordinatePair* = object
     x*: int
     y*: int
+  Path* = seq[CoordinatePair]
   Snake* = object
     id*: string
     name*: string
@@ -124,6 +125,8 @@ proc findFood(s: State): CoordinatePair =
       lowest = data.cost
       result = data.point
 
+  assert not (s.board.isDeadly result)
+
 randomize()
 proc randomSafeTile(b: Board): CoordinatePair =
   result = newCP(rand(b.width), rand(b.height))
@@ -141,21 +144,28 @@ proc findTarget*(s: State): CoordinatePair =
   for snake in s.board.snakes:
     if snake.body.len > biggestLen:
       biggestLen = snake.body.len
-  if s.you.health <= 30 or s.you.body.len <= biggestLen:
-    debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
-    result = findFood(s)
+  if s.board.food.len >= 1:
+    if s.you.health <= 30 or s.you.body.len <= biggestLen:
+      debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
+      result = findFood(s)
   else:
     debug "chasing tail"
-    result = s.you.tail
-  for snake in s.board.snakes:
-    if s.you.id == snake.id:
-      continue
-    for next in neighbors(s.board, snake.head):
-      if result == next:
-        return s.board.randomSafeTile
+    result = s.findTail
+
+  if s.board.isDeadly result:
+    debug fmt"chosen target {result} is deadly!"
+    return s.board.randomSafeTile
+
+  debug fmt"target: {result}"
+
+proc findPath*(s: State, source, target: CoordinatePair): Path =
+  result = newSeq[CoordinatePair]()
+  for point in path[Board, CoordinatePair, float](s.board, source, target):
+    result.add point
 
 when isMainModule:
-  import json, unittest
+  import json, logging, unittest
+  newConsoleLogger().addHandler
 
   suite "coordinates":
     test "equality":
@@ -180,6 +190,11 @@ when isMainModule:
           failed = true
 
       assert not failed
+
+  const
+    findFoodData = slurp "./testdata/state_findfood.json"
+    findTargetData = slurp "./testdata/state_findtarget.json"
+    preventSelfKill = slurp "./testdata/state_prevent_self_kill.json"
 
   suite "board":
     test "randomSafeTile":
@@ -218,15 +233,17 @@ when isMainModule:
   suite "targetFinding":
     template checkTargetIsntDeadly() =
       for snk in s.board.snakes:
-        check not (target in snk.body)
         check:
+          not (target in snk.body)
           target != newCP(0, 0)
           target != newCP(-1, -1)
 
+    template runTest(s: State) =
+      discard
+
     test "findFood":
-      const stData = slurp "./testdata/state_findfood.json"
       let
-        ss = stData.parseJson.to(seq[State])
+        ss = findFoodData.parseJson.to(seq[State])
       for s in ss:
         let
           target = s.findFood
@@ -234,15 +251,37 @@ when isMainModule:
         checkTargetIsntDeadly()
 
     test "findTail":
-      const stData = slurp "./testdata/state_findtarget.json"
       let
-        s = stData.parseJson.to(State)
+        s = findTargetData.parseJson.to(State)
         target = s.findTail
       checkTargetIsntDeadly()
 
     test "findTarget":
-      const stData = slurp "./testdata/state_findtarget.json"
       let
-        s = stData.parseJson.to(State)
+        s = findTargetData.parseJson.to(State)
         target = s.findTarget
       checkTargetIsntDeadly()
+
+  suite "findPath":
+    test "findFood":
+      let ss = findFoodData.parseJson.to(seq[State])
+      for s in ss:
+        let
+          source = s.you.head
+          target = s.findTarget
+          myPath = s.findPath(source, target)
+        check:
+          myPath.len >= 2
+          not (s.board.isDeadly myPath[1])
+
+    test "dontKillSelf":
+      let ss = preventSelfKill.parseJson.to(seq[State])
+      for s in ss:
+        let
+          source = s.you.head
+          target = s.findTarget
+          myPath = s.findPath(source, target)
+        check:
+          myPath.len >= 2
+          not (s.board.isDeadly myPath[1])
+
