@@ -59,7 +59,7 @@ proc findFood(s: State): CoordinatePair =
   assert not (s.board.isDeadly result)
 
 randomize()
-proc randomSafeTile(b: Board): CoordinatePair =
+proc randomSafeTile*(b: Board): CoordinatePair =
   result = newCP(rand(b.width), rand(b.height))
   if b.isDeadly(result) or b.isEdge(result):
     result = b.randomSafeTile

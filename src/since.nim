@@ -43,7 +43,7 @@ routes:
         target: CoordinatePair
         desc: string
 
-      if state.turn != 1:
+      if state.turn != 0:
         lastInfo = (await getData(state.game.id, $(state.turn-1))).to(GameData)
         target = lastInfo.target
         desc = lastInfo.desc
@@ -60,14 +60,14 @@ routes:
         desc = interm.state
 
       var myPath = state.findPath(source, target)
-      if myPath.len == 0:
-        let interm = state.findTarget
-        target = interm.cp
-        desc = interm.state
+      while myPath.len == 0:
+        target = state.board.randomSafeTile
+        desc = "random-fallback"
         myPath = state.findPath(source, target)
       var
         myMove: string
 
+      info fmt"{myPath}"
       if myPath.len >= 2:
         myMove = source -> myPath[1]
       else:
