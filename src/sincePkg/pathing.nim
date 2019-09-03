@@ -74,8 +74,8 @@ proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
 proc findTail(s: State): CoordinatePair =
   s.findSafeNeighbor(s.you.tail)
 
-proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string] =
-  result = (newCP(-1, -1), "invalid")
+proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string, victim: string] =
+  result = (newCP(-1, -1), "invalid", "")
   var
     totalLen = 0
     biggestLen = 0
@@ -88,19 +88,19 @@ proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string] =
   if s.board.food.len >= 1:
     if s.you.health <= 30 or s.you.body.len <= biggestLen:
       debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
-      result = (findFood(s), "food")
+      result = (findFood(s), "food", "")
   elif s.you.body.len.float > avgLen:
     debug fmt"hunting (myLen: {s.you.body.len}, avgLen: {avgLen})"
     for snake in s.board.snakes:
       if snake.body.len < s.you.body.len:
-        result = (s.findSafeNeighbor(snake.head), "hunting")
+        result = (s.findSafeNeighbor(snake.head), "hunting", snake.id)
   else:
     debug "chasing tail"
-    result = (s.findTail, "tail")
+    result = (s.findTail, "tail", "")
 
   if s.board.isDeadly(result.cp):
     debug fmt"chosen target {result} is deadly!"
-    return (s.board.randomSafeTile, "random")
+    return (s.board.randomSafeTile, "random", "")
 
   debug fmt"target: {result}"
 

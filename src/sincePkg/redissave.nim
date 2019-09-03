@@ -7,6 +7,7 @@ type GameData* = object
   myMove*: string
   path*: Path
   desc*: string
+  victim*: string
 
 proc cmp*(a, b: GameData): int =
   return cmp[int](a.state.turn, b.state.turn)
@@ -39,13 +40,14 @@ proc compareKey(a, b: string): int =
 
   return cmp[int](aSp[1].parseInt, bSp[1].parseInt)
 
-proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, desc: string) {.async.} =
+proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, desc, victim: string) {.async.} =
   let toWrite = %* {
     "state": s,
     "target": target,
     "path": path,
     "myMove": myMove,
-    "desc": desc
+    "desc": desc,
+    "victim": victim
   }
 
   await redisClient.setk(s.createKey, $toWrite)
