@@ -55,7 +55,10 @@ routes:
         desc = interm.state
         victim = interm.victim
 
-      if desc == "hunting":
+      case desc
+      of "tail":
+        target = state.you.tail
+      of "hunting":
         var found = false
         for sn in state.board.snakes:
           if sn.id == victim:
@@ -66,6 +69,7 @@ routes:
           target = interm.cp
           desc = interm.state
           victim = interm.victim
+      else: discard
 
       let source = state.you.head
 
