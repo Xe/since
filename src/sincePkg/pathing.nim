@@ -98,6 +98,10 @@ proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string, victim: str
   template randomTile() =
     result = (s.board.randomSafeTile, "random", "")
 
+  template tail() =
+    debug "chasing tail"
+    result = (s.findTail, "tail", "")
+
   if s.board.food.len >= 1:
     debug "food found"
     if s.you.body.len < biggestLen or s.you.health <= 30: food()
@@ -105,14 +109,18 @@ proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string, victim: str
   elif s.you.body.len.float > avgLen: hunt()
   elif s.board.snakes.len == 2 and s.you.body.len == biggestLen: hunt()
   else:
-    debug "chasing tail"
-    result = (s.findTail, "tail", "")
+    tail()
 
   if s.board.isDeadly(result.cp):
     debug fmt"chosen target {result} is deadly!"
     randomTile()
 
-  if result.state == "invalid": food()
+  if result.state == "invalid":
+    case rand(2)
+    of 1:
+      tail()
+    else:
+      food()
   debug fmt"target: {result}"
 
 proc findPath*(s: State, source, target: CoordinatePair): Path =

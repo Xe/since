@@ -41,10 +41,13 @@ proc view(nb: NimBox, gd: GameData, autoplay: bool) =
   nb.print(15, 5, "---")
   nb.print(15, 6, "snakes:")
 
-  var ln = 7
+  var ln = 8
 
   for sn in gd.state.board.snakes:
-    nb.print(15, ln, fmt"name: {sn.name[0]}, len: {sn.body.len}, health: {sn.health}", sn.name[0].int, 0)
+    var bg = 0
+    if gd.victim == sn.id:
+      bg = 232
+    nb.print(15, ln, fmt"name: {sn.name[0]}, len: {sn.body.len}, health: {sn.health}", sn.name[0].int, bg)
     ln += 1
 
   ln = 13
