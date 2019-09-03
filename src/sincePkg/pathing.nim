@@ -36,13 +36,7 @@ proc isEdge*(b: Board, p: CoordinatePair): bool =
     result = false
 
 proc heuristic*(s: State, node, goal: CoordinatePair): float =
-  if node in s.you.body:
-    return selfThere
-  if s.isDangerous node:
-    return dangerousPlace
-  if s.board.isDeadly node:
-    return enemyThere
-  chebyshev[CoordinatePair, float](node, goal)
+  manhattan[CoordinatePair, float](node, goal)
 
 proc findFood(s: State): CoordinatePair =
   var foods = newSeq[tuple [cost: float, point: CoordinatePair]]()
