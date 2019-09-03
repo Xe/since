@@ -85,23 +85,34 @@ proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string, victim: str
       biggestLen = snake.body.len
   let avgLen: float = totalLen / s.board.snakes.len
 
-  if s.board.food.len >= 1:
-    if s.you.health <= 30 or s.you.body.len <= biggestLen:
-      debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
-      result = (findFood(s), "food", "")
-  elif s.you.body.len.float > avgLen:
+  template food() =
+    debug fmt"seeking food (health: {s.you.health}, len: {s.you.body.len}, biggestLen: {biggestLen})"
+    result = (findFood(s), "food", "")
+
+  template hunt() =
     debug fmt"hunting (myLen: {s.you.body.len}, avgLen: {avgLen})"
     for snake in s.board.snakes:
       if snake.body.len < s.you.body.len:
         result = (s.findSafeNeighbor(snake.head), "hunting", snake.id)
+
+  template randomTile() =
+    result = (s.board.randomSafeTile, "random", "")
+
+  if s.board.food.len >= 1:
+    debug "food found"
+    if s.you.body.len < biggestLen or s.you.health <= 30: food()
+    if s.turn == 0: food()
+  elif s.you.body.len.float > avgLen: hunt()
+  elif s.board.snakes.len == 2 and s.you.body.len == biggestLen: hunt()
   else:
     debug "chasing tail"
     result = (s.findTail, "tail", "")
 
   if s.board.isDeadly(result.cp):
     debug fmt"chosen target {result} is deadly!"
-    return (s.board.randomSafeTile, "random", "")
+    randomTile()
 
+  if result.state == "invalid": food()
   debug fmt"target: {result}"
 
 proc findPath*(s: State, source, target: CoordinatePair): Path =
@@ -113,7 +124,7 @@ proc findPath*(s: State, source, target: CoordinatePair): Path =
 
 when isMainModule:
   import json, logging, os, unittest
-  #newConsoleLogger().addHandler
+  newConsoleLogger().addHandler
 
   const
     preventSelfKill = slurp "./testdata/state_prevent_self_kill.json"
