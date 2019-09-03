@@ -7,7 +7,7 @@ type
     x*: int
     y*: int
   Path* = seq[CoordinatePair]
-  Snake* = object
+  Snake* = ref object
     id*: string
     name*: string
     health*: int
@@ -32,7 +32,7 @@ proc newCP*(x, y: int): CoordinatePair =
 func `==`*(a, b: CoordinatePair): bool =
   a.x == b.x and a.y == b.y
 
-func `!=`* (a, b: CoordinatePair): bool =
+func `!=`*(a, b: CoordinatePair): bool =
   not (a == b)
 
 func `$`*(p: CoordinatePair): string =
@@ -72,7 +72,7 @@ template yieldIfExists*(s: State, p: CoordinatePair) =
 template yieldIfExistsAndSafe*(s: State, p: CoordinatePair) =
   let exists =
     p.x >= 0 and p.x < s.board.width and
-  p.y >= 0 and p.y < s.board.height
+    p.y >= 0 and p.y < s.board.height
   if exists and not s.board.isDeadly(p):
     yield p
 

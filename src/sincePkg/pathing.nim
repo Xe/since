@@ -45,7 +45,7 @@ proc findFood(s: State): CoordinatePair =
         (
           manhattan[CoordinatePair, float](s.you.head(), cp),
           cp
-        )
+      )
     )
   var lowest = 999999.9999 # XXX(Xe): HACK
   for data in foods:
@@ -68,7 +68,8 @@ proc findSafeNeighbor(s: State, p: CoordinatePair): CoordinatePair =
 proc findTail(s: State): CoordinatePair =
   s.findSafeNeighbor(s.you.tail)
 
-proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string, victim: string] =
+proc findTarget*(s: State): tuple[cp: CoordinatePair, state: string,
+    victim: string] =
   result = (newCP(-1, -1), "invalid", "")
   var
     totalLen = 0
@@ -144,16 +145,16 @@ when isMainModule:
             health: 9001,
             body: @[
               newCP(1, 1),
-            ],
-          ),
+        ],
+      ),
           Snake(
             id: "footest",
             name: "foo / bar",
             health: 9001,
             body: @[
               newCP(9, 9),
-            ],
-          ),
+        ],
+      ),
         ],
       )
 

@@ -40,7 +40,8 @@ proc compareKey(a, b: string): int =
 
   return cmp[int](aSp[1].parseInt, bSp[1].parseInt)
 
-proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path, desc, victim: string) {.async.} =
+proc saveTurn*(s: State, target: CoordinatePair, myMove: string, path: Path,
+    desc, victim: string) {.async.} =
   let toWrite = %* {
     "state": s,
     "target": target,

@@ -10,10 +10,6 @@ proc view(nb: NimBox, gd: GameData, autoplay: bool) =
         bg = 0
         sigil = " "
 
-      if cp == gd.target:
-        bg = 52
-        fg = 58
-        sigil = "%"
       for sn in gd.state.board.snakes:
         for seg in sn.body:
           if cp == seg:
@@ -25,6 +21,10 @@ proc view(nb: NimBox, gd: GameData, autoplay: bool) =
       for elem in gd.path:
         if cp == elem:
           bg = 244
+
+      if cp == gd.target:
+        bg = 52
+        fg = 58
 
       for elem in gd.state.board.food:
         if cp == elem:
@@ -47,7 +47,8 @@ proc view(nb: NimBox, gd: GameData, autoplay: bool) =
     var bg = 0
     if gd.victim == sn.id:
       bg = 232
-    nb.print(15, ln, fmt"name: {sn.name[0]}, len: {sn.body.len}, health: {sn.health}", sn.name[0].int, bg)
+    nb.print(15, ln, fmt"name: {sn.name[0]}, len: {sn.body.len}, health: {sn.health}",
+        sn.name[0].int, bg)
     ln += 1
 
   ln = 13
@@ -60,7 +61,8 @@ proc view(nb: NimBox, gd: GameData, autoplay: bool) =
   nb.print(0, ln+6, "Esc/q: exit")
   nb.print(0, ln+7, "Space: toggle autoplay")
 
-proc catlu(inpFile: string, startTurn = 0, autoplay = false, delay = 250, thenExit = false) =
+proc catlu(inpFile: string, startTurn = 0, autoplay = false, delay = 250,
+    thenExit = false) =
   let gds = inpFile.readFile.parseJson.to(seq[GameData])
   var nb = newNimbox()
   defer: nb.shutdown()

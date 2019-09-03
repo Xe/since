@@ -1,4 +1,6 @@
-import dotenv, logging, os
+import dotenv, jester, logging, os, strutils
+import jester/private/utils # XXX(Xe): needed for Settings type
+export Settings
 
 try: initDotEnv().overload
 except: discard
@@ -10,3 +12,9 @@ of "INFO":
 else:
   l = newConsoleLogger()
   l.addHandler
+
+proc jesterSettings*(): Settings =
+  newSettings(
+    bindAddr = getEnv "BIND_ADDR",
+    port = getEnv("PORT").parseInt.Port,
+  )
