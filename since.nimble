@@ -22,6 +22,8 @@ let testFiles = @[
 requires "nim >= 0.20.2", "jester", "redis",
          "astar#head", "dotenv", "cligen", "nimbox"
 
+requires "https://github.com/Xe/waffle#head"
+
 task catlu, "ko zbasu la catlu":
   withDir "src/sincePkg":
     exec "nim --hints:off --verbosity:0 c -o:../../bin/catlu catlu"
@@ -35,3 +37,5 @@ task test, "run tests":
     for tf in testFiles:
       exec "nim c --hints:off --verbosity:0 -r " & tf
       rmFile tf.toExe
+
+const engineDownloadURL = "https://github.com/battlesnakeio/engine/releases/download/v0.2.23/engine_0.2.23_Linux_x86_64.tar.gz"

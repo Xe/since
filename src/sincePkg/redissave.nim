@@ -26,6 +26,8 @@ proc init*(url: string) {.async.} =
       discard await redisClient.ping
 
   asyncCheck pingRedis()
+  asyncCheck redisClient.configSet("maxmemory", "50mb")
+  asyncCheck redisClient.configSet("maxmemory-policy", "allkeys-lru")
 
 proc createKey(gameId, turn: string): string =
   fmt"{gameId}:{turn}"

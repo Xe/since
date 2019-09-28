@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: since
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: since.kubermemes.within.website
+    external-dns.alpha.kubernetes.io/ttl: "120" #optional
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: since
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: since
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: since
+  template:
+    metadata:
+      labels:
+        app: since
+    spec:
+      containers:
+      - name: web
+        image: ${IMAGE}
+        env:
+          - name: PORT
+            value: "3000"
+          - name: BIND_ADDR
+            value: "0.0.0.0"
+          - name: REDIS_URL
+            value: "redis://127.0.0.1:6379"
+        ports:
+        - containerPort: 3000
+      - name: redis
+        image: redis:5.0.6-alpine
+      imagePullSecrets:
+      - name: regcred
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: since
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+spec:
+  rules:
+  - host: since.kubermemes.within.website
+    http:
+      paths:
+      - backend:
+          serviceName: since
+          servicePort: 80
+

@@ -1,0 +1,1 @@
+const gameTopic = "/queue/game"
